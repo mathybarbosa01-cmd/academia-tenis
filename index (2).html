@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+<title>Perfect Tennis Club</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,Arial,sans-serif;background:#F7F9F4;color:#222;position:relative}
+body::before,body::after{content:'';position:fixed;width:340px;height:340px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='96' fill='%23CDDC39'/%3E%3Cpath d='M18 34 Q95 100 18 166' stroke='%23F7F9F4' stroke-width='9' fill='none'/%3E%3Cpath d='M182 34 Q105 100 182 166' stroke='%23F7F9F4' stroke-width='9' fill='none'/%3E%3C/svg%3E");background-size:contain;background-repeat:no-repeat;opacity:.10;z-index:0;pointer-events:none}
+body::before{top:-70px;right:-90px}
+body::after{bottom:-100px;left:-110px;transform:rotate(25deg)}
+.app-bar,#stage{position:relative;z-index:1}
+.wrap{max-width:420px;margin:0 auto;padding:20px 16px 40px;position:relative;z-index:1}
+h1{font-size:18px;margin:0 0 4px}
+p.sub,.sub{font-size:13px;color:#666;margin:0 0 20px}
+label{font-size:13px;color:#555;display:block;margin-bottom:4px}
+input[type=date],select{width:100%;height:40px;border:1px solid #ccc;border-radius:6px;padding:0 10px;font-size:14px;margin-bottom:16px}
+button{width:100%;height:42px;border-radius:6px;border:1px solid #333;background:#222;color:#fff;font-size:14px;cursor:pointer}
+button.secundario{background:#fff;color:#333}
+button:disabled{opacity:.5}
+.fila{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eee}
+.fila .nombre{flex:1;font-size:14px}
+.fila input[type=checkbox]{width:20px;height:20px}
+.aviso{background:#f5f5f5;border-radius:6px;padding:10px 12px;font-size:13px;color:#555;margin-bottom:16px}
+.centro{text-align:center;padding:40px 10px;color:#666}
+.caja-verde{background:#CDDC39;border-radius:10px;padding:16px}
+.caja-verde label{color:#33361A;font-weight:600;font-size:13px;margin-bottom:8px}
+.caja-verde select,.caja-verde input[type=text]{width:100%;height:44px;border:none;border-radius:6px;background:#fff;padding:0 12px;font-size:15px;color:#222;margin-bottom:0}
+.resultado-estudiante{background:#fff;border-radius:8px;padding:10px 12px;margin-top:8px}
+.resultado-estudiante .nombre{font-size:14px;font-weight:700;color:#111}
+.resultado-estudiante .meta{font-size:12px;color:#666;margin-top:2px}
+.resultado-estudiante .estado{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:4px}
+.estado.activo{background:#EEF5C8;color:#556B0F}
+.estado.inactivo{background:#f0d5d5;color:#8a2c2c}
+.caja-azul{background:#1477BE;border-radius:10px;padding:14px 16px}
+.caja-azul-header{display:flex;align-items:center;justify-content:space-between;color:#fff;font-weight:600;font-size:14px}
+.tipo-clase-opciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.tipo-chip{flex:1 1 calc(50% - 8px);text-align:center;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:8px 6px;font-size:13px;cursor:pointer}
+.tipo-chip.on{background:#fff;color:#1477BE;font-weight:600;border-color:#fff}
+.caja-verde .tipo-chip{background:rgba(255,255,255,.4);color:#33361A;border-color:rgba(0,0,0,.15)}
+.caja-verde .tipo-chip.on{background:#fff;color:#33361A}
+.caja-azul label{color:#DCEEFB;margin-top:10px}
+.caja-azul input[type=date],.caja-azul input[type=number]{margin-bottom:0}
+.caja-azul textarea{width:100%;border:none;border-radius:6px;padding:8px 10px;font-size:14px;font-family:inherit;resize:vertical}
+.caja-azul button{background:#fff;color:#1477BE;border:none;font-weight:600}
+.indicadores{display:flex;gap:10px;margin-top:14px}
+.indicador{flex:1;background:#f5f5f5;border-radius:10px;padding:12px;text-align:center}
+.indicador-valor{font-size:22px;font-weight:700;color:#111}
+.indicador-label{font-size:11px;color:#666;margin-top:2px}
+.indicador.verde{background:#EEF5C8}.indicador.verde .indicador-valor{color:#556B0F}
+.indicador.azul{background:#DCEEFB}.indicador.azul .indicador-valor{color:#0D3E63}
+input[type=text],input[type=number],input[type=password],textarea{width:100%;border:1px solid #ccc;border-radius:6px;padding:0 10px;font-size:14px;margin-bottom:16px;font-family:inherit}
+input[type=text],input[type=number],input[type=password]{height:40px}
+textarea{padding:8px 10px}
+.app-bar{display:flex;align-items:center;gap:8px;padding:14px 16px 4px;max-width:420px;margin:0 auto}
+.app-bar .back{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;color:#333;cursor:pointer;flex-shrink:0}
+.app-bar .back:active{background:#eee}
+.app-bar h1{font-size:17px}
+.rol-card{display:flex;align-items:center;gap:14px;background:#f5f5f5;border-radius:12px;padding:18px;cursor:pointer;border-left:5px solid transparent}
+.rol-card:active{background:#eee}
+.rol-card.verde{background:#EEF5C8;border-left-color:#98A82A}
+.rol-card.azul{background:#DCEEFB;border-left-color:#1477BE}
+.rol-icono{font-size:22px;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;flex-shrink:0}
+.rol-titulo{font-size:16px;font-weight:700}
+.rol-sub{font-size:12px;color:#666;margin-top:2px}
+.caja-negra{background:#000;border-radius:10px;padding:14px 16px}
+.caja-header{display:flex;align-items:center;justify-content:space-between;color:#fff;font-weight:600;font-size:14px;cursor:pointer}
+.caja-negra label{color:#ccc;margin-top:4px}
+.caja-negra .sub{color:#aaa}
+.caja-negra .fila{border-bottom-color:#333}
+.caja-negra .fila .nombre{color:#fff}
+.caja-negra .centro{color:#aaa}
+.caja-negra button{background:#fff;color:#000;font-weight:600}
+.si-no{display:flex;gap:8px}
+.si-no-btn{flex:1;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.si-no-btn.on{background:#fff;color:#1477BE;font-weight:700}
+.reporte-btn{background:#DCEEFB;color:#0D3E63;font-weight:600;border-radius:8px;padding:14px;font-size:14px;margin-bottom:10px;cursor:pointer}
+.tabla-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid #eee;white-space:nowrap}
+th{color:#666;font-weight:600}
+html{-webkit-user-select:none;user-select:none;overscroll-behavior-y:contain}
+input,textarea{-webkit-user-select:text;user-select:text}
+body{overflow-x:hidden}
+.screen{position:absolute;top:0;left:0;width:100%;opacity:0;transform:translateX(16px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.screen.on{position:relative;opacity:1;transform:translateX(0);pointer-events:auto}
+#stage{position:relative;min-height:60vh}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(8px);background:#222;color:#fff;padding:10px 18px;border-radius:24px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:50;max-width:85vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#f7f7f7 37%,#f0f0f0 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:6px;height:52px;margin-bottom:10px}
+@keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
+.header-ptc{background:#000;padding:14px 16px;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;z-index:1}
+.header-ptc .marca{color:#CDDC39;font-weight:800;font-size:15px}
+.header-ptc .titulo{color:#fff;font-weight:bold;font-size:16px;letter-spacing:.5px}
+.liga-tabla-set{width:100%;border-collapse:collapse;margin-top:10px}
+.liga-tabla-set th,.liga-tabla-set td{padding:8px 6px;text-align:center;border-bottom:none;color:#fff}
+.liga-tabla-set th{font-weight:600;font-size:13px}
+.liga-tabla-set td:first-child,.liga-tabla-set th:first-child{text-align:left;font-size:13px}
+.liga-tabla-set input[type=number]{width:52px;text-align:center;margin:0;padding:6px 0}
+.liga-partido-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:14px}
+.liga-partido-item .liga-rival{font-weight:600}
+.liga-partido-item .liga-score{color:#666;font-size:13px}
+.liga-seccion-titulo{font-weight:700;margin:18px 0 6px;font-size:15px}
+.liga-error{color:#e74c3c;font-size:13px;margin-top:6px;display:none}
+</style>
+</head>
+<body>
+<div class="header-ptc"><span class="marca">PTC</span><span class="titulo">Control de asistencia</span></div>
+
+<div id="stage">
+
+<div class="screen on" data-screen="rol">
+  <div class="wrap" style="padding-top:24px;">
+    <div class="rol-card verde" onclick="goTo('profesor')"><div class="rol-icono">🎾</div><div><div class="rol-titulo">Profesor</div><div class="rol-sub">Registrar clases y asistencia</div></div></div>
+    <div class="rol-card azul" onclick="goTo('adminLogin')" style="margin-top:14px;"><div class="rol-icono">📋</div><div><div class="rol-titulo">Administrador</div><div class="rol-sub">Reportes de la academia</div></div></div>
+    <div class="rol-card verde" onclick="goTo('ligaLogin')" style="margin-top:14px;"><div class="rol-icono">🏆</div><div><div class="rol-titulo">LIGA PTC</div><div class="rol-sub">Registrar partidos y ver tu clasificación</div></div></div>
+  </div>
+</div>
+
+<div class="screen" data-screen="profesor">
+  <div class="app-bar"><div class="back" onclick="goTo('rol')">‹</div><h1>Profesor</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-verde">
+      <label for="selectProfesor">Profesor</label>
+      <select id="selectProfesor" onchange="onProfesorChange()"><option value="">Selecciona un profesor…</option></select>
+    </div>
+    <div class="caja-negra" style="margin-top:14px;">
+      <div class="caja-header" onclick="toggleAcademia()"><span>Clases de la academia</span><span class="chev" id="chevAcademia">▾</span></div>
+      <div id="cuerpoAcademia" style="display:none;margin-top:12px;">
+        <label>Fecha</label><input type="date" id="fechaAcademia">
+        <div id="categoriaTitulo" class="sub" style="margin:10px 0 6px;"></div>
+        <div id="listaNinos"></div>
+        <button id="btnReporteClase" onclick="reportarClaseAcademia()" style="margin-top:10px;display:none;">Reporte de clase</button>
+      </div>
+    </div>
+    <div class="caja-azul" style="margin-top:14px;">
+      <div class="caja-azul-header"><span>Clases personalizadas</span></div>
+      <div class="si-no" style="margin-top:10px;">
+        <button class="si-no-btn" id="btnPersNo" onclick="setPersonalizada(false)">No</button>
+        <button class="si-no-btn" id="btnPersSi" onclick="setPersonalizada(true)">Sí</button>
+      </div>
+      <div id="cuerpoPersonalizada" style="display:none;margin-top:14px;">
+        <div id="tipoClaseOpciones" class="tipo-clase-opciones"></div>
+        <label>Fecha</label><input type="date" id="fechaPersonalizada">
+        <label>Cantidad</label><input type="number" id="cantidadPersonalizada" min="1" placeholder="Ej: 1">
+        <label>Observaciones (opcional)</label><textarea id="observacionesPersonalizada" rows="2" placeholder="Observaciones…"></textarea>
+        <button id="btnReportar" onclick="reportarClasePersonalizada()" style="margin-top:6px;">Reportar</button>
+      </div>
+    </div>
+    <div id="indicadores" class="indicadores" style="display:none;">
+      <div class="indicador verde"><div class="indicador-valor" id="valorClasesMes">0</div><div class="indicador-label">Clases de la academia</div></div>
+      <div class="indicador azul"><div class="indicador-valor" id="valorClasesPersonalizadas">0</div><div class="indicador-label">Clases personalizadas</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" data-screen="adminLogin">
+  <div class="app-bar"><div class="back" onclick="goTo('rol')">‹</div><h1>Administrador</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <label>Usuario</label>
+    <input type="text" id="usuarioAdmin" placeholder="Ingresa tu usuario">
+    <button onclick="entrarAdmin()">Entrar</button>
+  </div>
+</div>
+
+<div class="screen" data-screen="admin">
+  <div class="app-bar"><div class="back" onclick="goTo('rol')">‹</div><h1>Reportes</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-verde" style="margin-bottom:14px;">
+      <label for="buscarEstudiante">Buscar estudiante</label>
+      <input type="text" id="buscarEstudiante" placeholder="Escribe un nombre…" onkeyup="buscarEstudiantes()" autocomplete="off">
+      <div id="resultadosBusqueda"></div>
+    </div>
+    <div class="reporte-btn" onclick="toggleFormPago()">1. Reporte de pagos de estudiantes</div>
+    <div id="formPago" class="caja-negra" style="display:none;margin-bottom:14px;">
+      <label>Estudiante</label>
+      <select id="pagoEstudiante" onchange="onCambioEstudiantePago()"><option value="">Selecciona un estudiante…</option></select>
+      <label>Categoría</label><input type="text" id="pagoCategoria" readonly>
+      <label>Cantidad de clases a cancelar</label>
+      <select id="pagoCantidadClases" onchange="onCambioCantidadPago()">
+        <option value="">Selecciona…</option>
+        <option value="1">1 clase</option><option value="2">2 clases</option><option value="3">3 clases</option><option value="4">4 clases</option><option value="5">5 clases</option><option value="6">6 clases</option><option value="7">7 clases</option><option value="8">8 clases</option><option value="9">9 clases</option><option value="10">10 clases</option><option value="11">11 clases</option><option value="12">12 clases</option>
+      </select>
+      <div id="pagoTarifaSugerida" class="aviso" style="display:none;"></div>
+      <label>Valor cancelado</label><input type="number" id="pagoValor" placeholder="Valor en pesos">
+      <label>Mes</label>
+      <select id="pagoMes">
+        <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+      </select>
+      <button id="btnRegistrarPago" onclick="registrarPago()">Registrar pago</button>
+      <button class="secundario" style="margin-top:8px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);" onclick="cargarReporte('pagos')">Ver historial de pagos</button>
+    </div>
+    <div class="reporte-btn" onclick="cargarReporte('asistencias')">2. Reporte de asistencias por estudiante</div>
+    <div class="reporte-btn" onclick="cargarReporte('tipo')">3. Clases personalizadas por profesor y tipo</div>
+    <div class="reporte-btn" onclick="cargarReporte('profesor')">4. Clases personalizadas por profesor (total academia)</div>
+    <div class="reporte-btn" onclick="cargarReporte('conciliacion')">5. Clases pagadas vs. clases tomadas</div>
+    <div id="reporteResultado" style="margin-top:16px;"></div>
+  </div>
+</div>
+
+<div class="screen" data-screen="ligaLogin">
+  <div class="app-bar"><div class="back" onclick="ligaVolverARol()">‹</div><h1>LIGA PTC</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-verde"><label>Selecciona tu categoría</label><div id="ligaCategoriaOpciones" class="tipo-clase-opciones"></div></div>
+    <div id="ligaCajaJugador" class="caja-negra" style="margin-top:14px;display:none;">
+      <label>Jugador</label>
+      <select id="ligaSelectJugador" onchange="ligaOnJugadorChange()"><option value="">Selecciona tu nombre…</option></select>
+    </div>
+    <div id="ligaCajaClave" class="caja-negra" style="margin-top:14px;display:none;">
+      <label>Clave</label>
+      <input type="password" id="ligaClave" placeholder="Ingresa tu clave" inputmode="numeric">
+      <div class="liga-error" id="ligaErrorLogin"></div>
+      <button id="ligaBtnEntrar" onclick="ligaEntrar()" style="margin-top:10px;">Entrar</button>
+    </div>
+    <div class="rol-card azul" onclick="ligaAdminAbrir()" style="margin-top:18px;"><div class="rol-icono">🔒</div><div><div class="rol-titulo">Administrador</div><div class="rol-sub">Clasificación de todas las categorías</div></div></div>
+  </div>
+</div>
+
+<div class="screen" data-screen="ligaAdmin">
+  <div class="app-bar"><div class="back" onclick="ligaAdminVolver()">‹</div><h1>LIGA PTC · Administrador</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div id="ligaAdminLoginBox" class="caja-negra">
+      <label>Clave de administrador</label>
+      <input type="password" id="ligaAdminClave" placeholder="Ingresa la clave">
+      <div class="liga-error" id="ligaAdminError"></div>
+      <button id="ligaAdminBtn" onclick="ligaAdminEntrar()" style="margin-top:10px;">Entrar</button>
+    </div>
+    <div id="ligaAdminResultados" style="display:none;">
+      <button class="secundario" onclick="ligaAdminCargar()" style="margin-bottom:6px;">Actualizar</button>
+      <div id="ligaAdminTablas"></div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" data-screen="ligaPanel">
+  <div class="app-bar"><div class="back" onclick="ligaCerrarSesion()">‹</div><h1>LIGA PTC</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-verde">
+      <div><strong>Jugador:</strong> <span id="ligaNombreJugador">—</span></div>
+      <div style="margin-top:4px;"><strong>Categoría:</strong> <span id="ligaCategoriaJugador">—</span></div>
+    </div>
+    <div class="caja-negra" style="margin-top:14px;">
+      <div class="caja-header" onclick="ligaToggleRegistrar()"><span>Registrar partido</span><span class="chev" id="ligaChevRegistrar">▾</span></div>
+      <div id="ligaCuerpoRegistrar" style="display:none;margin-top:12px;">
+        <label>Contrincante</label>
+        <select id="ligaSelectContrincante"><option value="">Selecciona un contrincante…</option></select>
+        <table class="liga-tabla-set">
+          <thead><tr><th></th><th>Set 1</th><th>Set 2</th><th>Set 3</th></tr></thead>
+          <tbody>
+            <tr><td>Mi jugador</td><td><input type="number" id="ligaSet1J" min="0" max="7" step="1"></td><td><input type="number" id="ligaSet2J" min="0" max="7" step="1"></td><td><input type="number" id="ligaSet3J" min="0" max="7" step="1"></td></tr>
+            <tr><td>Contrincante</td><td><input type="number" id="ligaSet1C" min="0" max="7" step="1"></td><td><input type="number" id="ligaSet2C" min="0" max="7" step="1"></td><td><input type="number" id="ligaSet3C" min="0" max="7" step="1"></td></tr>
+          </tbody>
+        </table>
+        <div class="liga-error" id="ligaErrorPartido"></div>
+        <button id="ligaBtnGuardarPartido" onclick="ligaGuardarPartido()" style="margin-top:10px;">Guardar partido</button>
+      </div>
+    </div>
+    <div class="liga-seccion-titulo">Partidos Ganados</div><div id="ligaListaGanados"><div class="skeleton"></div></div>
+    <div class="liga-seccion-titulo">Partidos Perdidos</div><div id="ligaListaPerdidos"><div class="skeleton"></div></div>
+    <div class="liga-seccion-titulo">Clasificación</div><div id="ligaClasificacion"><div class="skeleton"></div></div>
+  </div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- ADAPTADOR: reemplaza google.script.run por llamadas a tu Apps Script -->
+<script>
+  var API_URL = 'https://script.google.com/macros/s/AKfycbxOMqAyG7DET6piLtyu9hsSEd4pAsY068ueKsrkhXlkPZUCPUDN_uCOG2kBniy1zQU7/exec';
+
+  function crearRunner_(ok, fail) {
+    return new Proxy({}, {
+      get: function (_, fn) {
+        if (fn === 'withSuccessHandler') return function (f) { return crearRunner_(f, fail); };
+        if (fn === 'withFailureHandler') return function (f) { return crearRunner_(ok, f); };
+        return function () {
+          var args = Array.prototype.slice.call(arguments);
+          fetch(API_URL, { method: 'POST', body: JSON.stringify({ fn: fn, args: args }) })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+              if (res.ok) { if (ok) ok(res.data); }
+              else if (fail) fail(new Error(res.error));
+            })
+            .catch(function (e) { if (fail) fail(e); });
+        };
+      }
+    });
+  }
+  window.google = { script: { get run() { return crearRunner_(null, null); } } };
+</script>
+
+<script>
+var TIPOS_CLASE=['Individual','Dual','Trial','Grupal'];
+var tipoClasePersonalizadaSeleccionado='';
+var profesorActualId='';
+var estudiantes=[];
+var estado={};
+
+function esc_(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.classList.remove('show');},Math.max(2200,msg.length*60));
+}
+function goTo(n){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.dataset.screen===n);});
+  window.scrollTo(0,0);
+}
+function pad_(n){return String(n).padStart(2,'0');}
+function primerDiaMes_(){var d=new Date();return d.getFullYear()+'-'+pad_(d.getMonth()+1)+'-01';}
+function ultimoDiaMes_(){var d=new Date();var u=new Date(d.getFullYear(),d.getMonth()+1,0);return u.getFullYear()+'-'+pad_(u.getMonth()+1)+'-'+pad_(u.getDate());}
+function hoy_(){var d=new Date();return d.getFullYear()+'-'+pad_(d.getMonth()+1)+'-'+pad_(d.getDate());}
+function errMsg_(e,def){return e&&e.message?e.message:def;}
+
+(function init(){
+  google.script.run
+    .withSuccessHandler(function(profesores){
+      var sel=document.getElementById('selectProfesor');
+      (profesores||[]).forEach(function(p){var o=document.createElement('option');o.value=p.profesorId;o.textContent=p.nombre;sel.appendChild(o);});
+    })
+    .withFailureHandler(function(e){var m=errMsg_(e,'No se pudo cargar la lista de profesores.');showToast(m);var sel=document.getElementById('selectProfesor');sel.options[0].textContent='ERROR: '+m;})
+    .listarProfesores();
+  ['fechaAcademia','fechaPersonalizada'].forEach(function(id){
+    var f=document.getElementById(id);
+    f.min=primerDiaMes_();f.max=ultimoDiaMes_();f.value=hoy_();
+  });
+  renderTipoClaseOpciones();
+})();
+
+function onProfesorChange(){
+  profesorActualId=document.getElementById('selectProfesor').value;
+  document.getElementById('cuerpoAcademia').style.display='none';
+  document.getElementById('chevAcademia').textContent='▾';
+  estudiantes=[];
+  if(!profesorActualId){document.getElementById('indicadores').style.display='none';return;}
+  cargarIndicadores();
+}
+function cargarIndicadores(){
+  google.script.run
+    .withSuccessHandler(function(ind){
+      document.getElementById('valorClasesMes').textContent=ind.clasesDelMes;
+      document.getElementById('valorClasesPersonalizadas').textContent=ind.clasesPersonalizadas;
+      document.getElementById('indicadores').style.display='flex';
+    })
+    .withFailureHandler(function(){document.getElementById('indicadores').style.display='none';})
+    .indicadoresProfesor(profesorActualId);
+}
+function toggleAcademia(){
+  if(!profesorActualId){showToast('Primero selecciona un profesor.');return;}
+  var c=document.getElementById('cuerpoAcademia');
+  var abrir=c.style.display==='none';
+  c.style.display=abrir?'block':'none';
+  document.getElementById('chevAcademia').textContent=abrir?'▴':'▾';
+  if(abrir&&estudiantes.length===0)cargarNinos();
+}
+function cargarNinos(){
+  var titulo=document.getElementById('categoriaTitulo');
+  var cont=document.getElementById('listaNinos');
+  titulo.textContent='Cargando…';
+  cont.innerHTML='<div class="skeleton"></div><div class="skeleton"></div>';
+  google.script.run
+    .withSuccessHandler(renderNinos)
+    .withFailureHandler(function(e){titulo.textContent='';cont.innerHTML='';showToast(errMsg_(e,'No se pudo cargar la categoría del profesor.'));})
+    .estudiantesDeProfesor(profesorActualId);
+}
+function renderNinos(data){
+  var cont=document.getElementById('listaNinos');
+  var titulo=document.getElementById('categoriaTitulo');
+  var btn=document.getElementById('btnReporteClase');
+  estudiantes=(data&&data.estudiantes)||[];
+  estado={};
+  estudiantes.forEach(function(e){estado[e.estudianteId]={asistio:true,observacion:''};});
+  if(!data||!data.categoriaNombre){titulo.textContent='';cont.innerHTML='<div class="centro">Este profesor no tiene una categoría configurada.</div>';btn.style.display='none';return;}
+  titulo.textContent='Categoría: '+data.categoriaNombre;
+  if(estudiantes.length===0){cont.innerHTML='<div class="centro">No hay niños activos en esta categoría.</div>';btn.style.display='none';return;}
+  cont.innerHTML=estudiantes.map(function(e){
+    return '<div class="fila"><input type="checkbox" checked onchange="toggle(\''+esc_(e.estudianteId)+'\')"><span class="nombre">'+esc_(e.nombre)+'</span></div>';
+  }).join('');
+  btn.style.display='block';
+}
+function toggle(id){estado[id].asistio=!estado[id].asistio;}
+function reportarClaseAcademia(){
+  if(!profesorActualId||estudiantes.length===0)return;
+  var fecha=document.getElementById('fechaAcademia').value||hoy_();
+  var registros=estudiantes.map(function(e){return{estudianteId:e.estudianteId,grupoId:e.grupoId,asistio:estado[e.estudianteId].asistio,observacion:''};});
+  var btn=document.getElementById('btnReporteClase');
+  btn.disabled=true;btn.textContent='Enviando…';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false;btn.textContent='Reporte de clase';
+      if(!res.ok){showToast(res.error);return;}
+      showToast('Reporte enviado — '+res.asistieron+' de '+res.insertados+' asistieron.');
+      cargarIndicadores();
+    })
+    .withFailureHandler(function(e){btn.disabled=false;btn.textContent='Reporte de clase';showToast(errMsg_(e,'No se pudo enviar el reporte.'));})
+    .guardarClase(profesorActualId,fecha,registros);
+}
+
+function setPersonalizada(si){
+  document.getElementById('btnPersSi').classList.toggle('on',si);
+  document.getElementById('btnPersNo').classList.toggle('on',!si);
+  document.getElementById('cuerpoPersonalizada').style.display=si?'block':'none';
+}
+function renderTipoClaseOpciones(){
+  document.getElementById('tipoClaseOpciones').innerHTML=TIPOS_CLASE.map(function(t){
+    return '<div class="tipo-chip'+(t===tipoClasePersonalizadaSeleccionado?' on':'')+'" onclick="seleccionarTipoClase(\''+t+'\')">'+t+'</div>';
+  }).join('');
+}
+function seleccionarTipoClase(t){tipoClasePersonalizadaSeleccionado=t;renderTipoClaseOpciones();}
+function reportarClasePersonalizada(){
+  if(!profesorActualId){showToast('Primero selecciona un profesor.');return;}
+  if(!tipoClasePersonalizadaSeleccionado){showToast('Selecciona el tipo de clase.');return;}
+  var fecha=document.getElementById('fechaPersonalizada').value;
+  var cantidad=document.getElementById('cantidadPersonalizada').value;
+  var obs=document.getElementById('observacionesPersonalizada').value;
+  if(!fecha){showToast('Selecciona la fecha de la clase.');return;}
+  if(!cantidad){showToast('Ingresa la cantidad.');return;}
+  var btn=document.getElementById('btnReportar');
+  btn.disabled=true;btn.textContent='Reportando…';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false;btn.textContent='Reportar';
+      if(!res.ok){showToast(res.error||'No se pudo reportar la clase.');return;}
+      showToast(res.acumulado?'Sumado — total del día: '+res.cantidadTotal:'Clase personalizada reportada.');
+      document.getElementById('cantidadPersonalizada').value='';
+      document.getElementById('observacionesPersonalizada').value='';
+      cargarIndicadores();
+    })
+    .withFailureHandler(function(e){btn.disabled=false;btn.textContent='Reportar';showToast(errMsg_(e,'No se pudo reportar la clase.'));})
+    .reportarClasePersonalizada(profesorActualId,tipoClasePersonalizadaSeleccionado,fecha,cantidad,obs);
+}
+
+var estudiantesAdminCache=null;
+function quitarAcentosJS_(t){return String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function buscarEstudiantes(){
+  var q=document.getElementById('buscarEstudiante').value.trim();
+  var cont=document.getElementById('resultadosBusqueda');
+  if(!q){cont.innerHTML='';return;}
+  if(estudiantesAdminCache){renderResultadosBusqueda(q);return;}
+  cont.innerHTML='<div class="skeleton"></div>';
+  google.script.run
+    .withSuccessHandler(function(l){estudiantesAdminCache=l||[];renderResultadosBusqueda(document.getElementById('buscarEstudiante').value.trim());})
+    .withFailureHandler(function(e){cont.innerHTML='';showToast(errMsg_(e,'No se pudo cargar la lista de estudiantes.'));})
+    .listarEstudiantesAdmin();
+}
+function renderResultadosBusqueda(q){
+  var cont=document.getElementById('resultadosBusqueda');
+  if(!q){cont.innerHTML='';return;}
+  var qn=quitarAcentosJS_(q).toUpperCase();
+  var co=estudiantesAdminCache.filter(function(e){return quitarAcentosJS_(e.nombre).toUpperCase().indexOf(qn)!==-1;});
+  if(co.length===0){cont.innerHTML='<div class="centro" style="padding:14px 0;">Sin resultados.</div>';return;}
+  cont.innerHTML=co.slice(0,20).map(function(e){
+    var ec=String(e.estado).trim().toLowerCase()==='activo'?'activo':'inactivo';
+    return '<div class="resultado-estudiante"><div class="nombre">'+esc_(e.nombre)+'</div><div class="meta">'+esc_(e.categoriaNombre||'Sin categoría')+(e.telefono?' · '+esc_(e.telefono):'')+'</div><span class="estado '+ec+'">'+esc_(e.estado||'—')+'</span></div>';
+  }).join('');
+}
+
+var estudiantesPagoCargados=false;
+function toggleFormPago(){
+  var form=document.getElementById('formPago');
+  var abrir=form.style.display==='none';
+  form.style.display=abrir?'block':'none';
+  if(abrir&&!estudiantesPagoCargados){
+    google.script.run
+      .withSuccessHandler(function(l){
+        var sel=document.getElementById('pagoEstudiante');
+        (l||[]).forEach(function(e){var o=document.createElement('option');o.value=e.estudianteId;o.dataset.categoria=e.categoriaNombre;o.textContent=e.nombre;sel.appendChild(o);});
+        estudiantesPagoCargados=true;
+      })
+      .withFailureHandler(function(e){showToast(errMsg_(e,'No se pudo cargar la lista de estudiantes.'));})
+      .estudiantesParaPago();
+  }
+}
+function onCambioEstudiantePago(){
+  var sel=document.getElementById('pagoEstudiante');
+  var opt=sel.options[sel.selectedIndex];
+  document.getElementById('pagoCategoria').value=opt?(opt.dataset.categoria||''):'';
+  document.getElementById('pagoTarifaSugerida').style.display='none';
+  actualizarTarifaSugerida();
+}
+function onCambioCantidadPago(){actualizarTarifaSugerida();}
+function actualizarTarifaSugerida(){
+  var id=document.getElementById('pagoEstudiante').value;
+  var cant=document.getElementById('pagoCantidadClases').value;
+  var caja=document.getElementById('pagoTarifaSugerida');
+  if(!id||!cant){caja.style.display='none';return;}
+  google.script.run
+    .withSuccessHandler(function(t){
+      if(!t){caja.style.display='none';return;}
+      caja.style.display='block';
+      caja.textContent=(t.esPorClase?'Tarifa esporádica: ':'Mensualidad sugerida: ')+'$'+t.valorSugerido.toLocaleString('es-CO')+' · Póliza anual: $'+t.poliza.toLocaleString('es-CO');
+      document.getElementById('pagoValor').value=t.valorSugerido;
+    })
+    .withFailureHandler(function(e){caja.style.display='none';showToast(errMsg_(e,'No se pudo calcular la tarifa.'));})
+    .calcularTarifaEstudiante(id,cant);
+}
+function registrarPago(){
+  var id=document.getElementById('pagoEstudiante').value;
+  var cat=document.getElementById('pagoCategoria').value;
+  var cant=document.getElementById('pagoCantidadClases').value;
+  var valor=document.getElementById('pagoValor').value;
+  var mes=document.getElementById('pagoMes').value;
+  if(!id){showToast('Selecciona un estudiante.');return;}
+  if(!cant){showToast('Selecciona la cantidad de clases.');return;}
+  if(!valor){showToast('Ingresa el valor cancelado.');return;}
+  var btn=document.getElementById('btnRegistrarPago');
+  btn.disabled=true;btn.textContent='Guardando…';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false;btn.textContent='Registrar pago';
+      if(!res.ok){showToast(res.error||'No se pudo registrar el pago.');return;}
+      showToast('Pago registrado.');
+      document.getElementById('pagoValor').value='';
+      document.getElementById('pagoCantidadClases').value='';
+      document.getElementById('pagoTarifaSugerida').style.display='none';
+      cargarReporte('pagos');
+    })
+    .withFailureHandler(function(e){btn.disabled=false;btn.textContent='Registrar pago';showToast(errMsg_(e,'No se pudo registrar el pago.'));})
+    .registrarPagoEstudiante(id,valor,mes,cant,cat);
+}
+
+function entrarAdmin(){
+  var usuario=document.getElementById('usuarioAdmin').value;
+  google.script.run
+    .withSuccessHandler(function(res){if(!res.ok){showToast(res.error);return;}goTo('admin');})
+    .withFailureHandler(function(e){showToast(errMsg_(e,'No se pudo validar el usuario.'));})
+    .validarUsuarioAdmin(usuario);
+}
+var REPORTES={
+  pagos:{fn:'reportePagosEstudiantes',columnas:[['estudiante','Estudiante'],['fecha','Fecha'],['valor','Valor'],['metodoPago','Método'],['periodo','Periodo']]},
+  asistencias:{fn:'reporteAsistenciasPorEstudiante',columnas:[['estudiante','Estudiante'],['clasesAsistidas','Asistió'],['clasesRegistradas','Registradas']]},
+  tipo:{fn:'reporteClasesPersonalizadasPorTipo',columnas:[['profesor','Profesor'],['tipoClase','Tipo'],['cantidad','Cantidad'],['reportes','Reportes']]},
+  profesor:{fn:'reporteClasesPersonalizadasPorProfesor',columnas:[['profesor','Profesor'],['cantidadTotal','Cantidad total']]},
+  conciliacion:{fn:'reporteClasesPagadasVsTomadas',columnas:[['estudiante','Estudiante'],['clasesPagadas','Pagadas'],['clasesTomadas','Tomadas'],['diferencia','Diferencia']]}
+};
+function cargarReporte(clave){
+  var cont=document.getElementById('reporteResultado');
+  cont.innerHTML='<div class="skeleton"></div><div class="skeleton"></div>';
+  var def=REPORTES[clave];
+  google.script.run
+    .withSuccessHandler(function(f){renderTabla(def.columnas,f);})
+    .withFailureHandler(function(e){cont.innerHTML='';showToast(errMsg_(e,'No se pudo cargar el reporte.'));})
+    [def.fn]();
+}
+function renderTabla(cols,filas){
+  var cont=document.getElementById('reporteResultado');
+  if(!filas||filas.length===0){cont.innerHTML='<div class="centro">Sin datos todavía.</div>';return;}
+  var thead='<tr>'+cols.map(function(c){return '<th>'+c[1]+'</th>';}).join('')+'</tr>';
+  var tbody=filas.map(function(f){return '<tr>'+cols.map(function(c){return '<td>'+(f[c[0]]!==undefined?esc_(f[c[0]]):'')+'</td>';}).join('')+'</tr>';}).join('');
+  cont.innerHTML='<div class="tabla-wrap"><table>'+thead+tbody+'</table></div>';
+}
+
+/* ===== LIGA PTC ===== */
+var ligaCategoriaSeleccionada='';
+var ligaFilaJugadorSeleccionado='';
+var ligaJugadorActual=null;
+var LIGA_CATEGORIAS=['6ta','5ta A','5ta B','4ta'];
+
+function ligaRenderCategorias(){
+  document.getElementById('ligaCategoriaOpciones').innerHTML=LIGA_CATEGORIAS.map(function(c){
+    return '<div class="tipo-chip'+(c===ligaCategoriaSeleccionada?' on':'')+'" onclick="ligaSeleccionarCategoria(\''+c+'\')">'+c+'</div>';
+  }).join('');
+}
+ligaRenderCategorias();
+
+function ligaResetLogin(){
+  ligaCategoriaSeleccionada='';ligaFilaJugadorSeleccionado='';
+  document.getElementById('ligaCajaJugador').style.display='none';
+  document.getElementById('ligaCajaClave').style.display='none';
+  document.getElementById('ligaSelectJugador').innerHTML='<option value="">Selecciona tu nombre…</option>';
+  document.getElementById('ligaClave').value='';
+  document.getElementById('ligaErrorLogin').style.display='none';
+  ligaRenderCategorias();
+}
+function ligaVolverARol(){ligaResetLogin();goTo('rol');}
+function ligaSeleccionarCategoria(cat){
+  ligaCategoriaSeleccionada=cat;ligaFilaJugadorSeleccionado='';
+  ligaRenderCategorias();
+  document.getElementById('ligaCajaClave').style.display='none';
+  document.getElementById('ligaErrorLogin').style.display='none';
+  var sel=document.getElementById('ligaSelectJugador');
+  sel.innerHTML='<option value="">Cargando…</option>';
+  document.getElementById('ligaCajaJugador').style.display='block';
+  google.script.run
+    .withSuccessHandler(function(js){
+      sel.innerHTML='<option value="">Selecciona tu nombre…</option>';
+      (js||[]).forEach(function(j){var o=document.createElement('option');o.value=j.fila;o.textContent=j.nombre;sel.appendChild(o);});
+    })
+    .withFailureHandler(function(e){sel.innerHTML='<option value="">Selecciona tu nombre…</option>';showToast(errMsg_(e,'No se pudo cargar la lista de jugadores.'));})
+    .listarJugadoresLigaPTC(cat);
+}
+function ligaOnJugadorChange(){
+  ligaFilaJugadorSeleccionado=document.getElementById('ligaSelectJugador').value;
+  document.getElementById('ligaErrorLogin').style.display='none';
+  document.getElementById('ligaCajaClave').style.display=ligaFilaJugadorSeleccionado?'block':'none';
+}
+function ligaEntrar(){
+  var clave=document.getElementById('ligaClave').value;
+  var eb=document.getElementById('ligaErrorLogin');
+  eb.style.display='none';
+  if(!ligaFilaJugadorSeleccionado){showToast('Selecciona tu nombre.');return;}
+  if(!clave){showToast('Ingresa tu clave.');return;}
+  var btn=document.getElementById('ligaBtnEntrar');
+  btn.disabled=true;btn.textContent='Validando…';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false;btn.textContent='Entrar';
+      if(!res.ok){eb.textContent=res.error||'Clave incorrecta.';eb.style.display='block';return;}
+      ligaJugadorActual=res.jugador;
+      document.getElementById('ligaClave').value='';
+      ligaAbrirPanel();
+    })
+    .withFailureHandler(function(e){btn.disabled=false;btn.textContent='Entrar';eb.textContent=errMsg_(e,'No se pudo validar la clave.');eb.style.display='block';})
+    .validarClaveLigaPTC(ligaFilaJugadorSeleccionado,ligaCategoriaSeleccionada,clave);
+}
+function ligaCerrarSesion(){
+  ligaJugadorActual=null;
+  document.getElementById('ligaCuerpoRegistrar').style.display='none';
+  document.getElementById('ligaChevRegistrar').textContent='▾';
+  ligaResetLogin();goTo('rol');
+}
+function ligaAbrirPanel(){
+  document.getElementById('ligaNombreJugador').textContent=ligaJugadorActual.nombre;
+  document.getElementById('ligaCategoriaJugador').textContent=ligaJugadorActual.categoria;
+  ligaCargarContrincantes();
+  ligaLimpiarFormularioPartido();
+  ligaCargarPanelDatos();
+  goTo('ligaPanel');
+}
+function ligaCargarContrincantes(){
+  var sc=document.getElementById('ligaSelectContrincante');
+  sc.innerHTML='<option value="">Cargando…</option>';
+  google.script.run
+    .withSuccessHandler(function(js){
+      sc.innerHTML='<option value="">Selecciona un contrincante…</option>';
+      (js||[]).forEach(function(j){var o=document.createElement('option');o.value=j.fila;o.textContent=j.nombre;sc.appendChild(o);});
+    })
+    .withFailureHandler(function(e){sc.innerHTML='<option value="">Selecciona un contrincante…</option>';showToast(errMsg_(e,'No se pudo cargar la lista de contrincantes.'));})
+    .listarContrincantesLigaPTC(ligaJugadorActual.categoria,ligaJugadorActual.fila);
+}
+function ligaCargarPanelDatos(){
+  ['ligaListaGanados','ligaListaPerdidos','ligaClasificacion'].forEach(function(id){document.getElementById(id).innerHTML='<div class="skeleton"></div>';});
+  google.script.run
+    .withSuccessHandler(function(d){
+      ligaRenderListaPartidos('ligaListaGanados',d.ganados,true);
+      ligaRenderListaPartidos('ligaListaPerdidos',d.perdidos,false);
+      ligaRenderClasificacion(d.clasificacion);
+    })
+    .withFailureHandler(function(e){showToast(errMsg_(e,'No se pudo cargar la información del panel.'));})
+    .panelLigaPTC(ligaJugadorActual.nombre,ligaJugadorActual.categoria);
+}
+function ligaRenderListaPartidos(id,lista,gan){
+  var cont=document.getElementById(id);
+  if(!lista||lista.length===0){cont.innerHTML='<div class="centro" style="padding:10px 0;">'+(gan?'Todavía no tienes partidos ganados.':'Todavía no tienes partidos perdidos.')+'</div>';return;}
+  cont.innerHTML=lista.map(function(p){return '<div class="liga-partido-item"><span class="liga-rival">'+esc_(p.contrincante)+'</span><span class="liga-score">'+esc_(p.score)+'</span></div>';}).join('');
+}
+function ligaTablaClasif_(filas,resaltar){
+  var thead='<tr><th>Pos.</th><th>Jugador</th><th>PJ</th><th>PG</th><th>PP</th></tr>';
+  var tbody=filas.map(function(f){
+    var yo=resaltar&&f.jugador===resaltar;
+    var pj=f.partidosJugados!==undefined?f.partidosJugados:(f.ganados+f.perdidos);
+    return '<tr'+(yo?' style="font-weight:700;"':'')+'><td>'+f.posicion+'</td><td>'+esc_(f.jugador)+'</td><td>'+pj+'</td><td>'+f.ganados+'</td><td>'+f.perdidos+'</td></tr>';
+  }).join('');
+  return '<div class="tabla-wrap"><table>'+thead+tbody+'</table></div>';
+}
+function ligaRenderClasificacion(filas){
+  var cont=document.getElementById('ligaClasificacion');
+  if(!filas||filas.length===0){cont.innerHTML='<div class="centro" style="padding:10px 0;">Sin datos todavía.</div>';return;}
+  cont.innerHTML=ligaTablaClasif_(filas,ligaJugadorActual?ligaJugadorActual.nombre:'');
+}
+function ligaToggleRegistrar(){
+  var c=document.getElementById('ligaCuerpoRegistrar');
+  var abrir=c.style.display==='none';
+  c.style.display=abrir?'block':'none';
+  document.getElementById('ligaChevRegistrar').textContent=abrir?'▴':'▾';
+}
+function ligaLimpiarFormularioPartido(){
+  document.getElementById('ligaSelectContrincante').value='';
+  ['ligaSet1J','ligaSet1C','ligaSet2J','ligaSet2C','ligaSet3J','ligaSet3C'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('ligaErrorPartido').style.display='none';
+}
+function ligaLeerSet_(idJ,idC){
+  var j=document.getElementById(idJ).value,c=document.getElementById(idC).value;
+  return{j:j===''?'':Number(j),c:c===''?'':Number(c)};
+}
+function ligaValidarSetCliente_(s){
+  if(s.j===''||s.c==='')return false;
+  if(!Number.isInteger(s.j)||!Number.isInteger(s.c))return false;
+  if(s.j<0||s.j>7||s.c<0||s.c>7)return false;
+  return s.j!==s.c;
+}
+function ligaValidarPartidoCliente_(sets){
+  var s1=sets[0],s2=sets[1],s3=sets[2];
+  if(!ligaValidarSetCliente_(s1))return 'El set 1 no es válido (0 a 7, sin empate).';
+  if(!ligaValidarSetCliente_(s2))return 'El set 2 no es válido (0 a 7, sin empate).';
+  var g=(s1.j>s1.c?1:0)+(s2.j>s2.c?1:0);
+  var necesita=g===1;
+  var hay=s3.j!==''&&s3.c!=='';
+  if(necesita&&!hay)return 'El resultado quedó 1-1: el set 3 es obligatorio.';
+  if(!necesita&&hay)return 'Ya hay un ganador con 2 sets: el set 3 debe quedar vacío.';
+  if(hay&&!ligaValidarSetCliente_(s3))return 'El set 3 no es válido (0 a 7, sin empate).';
+  return '';
+}
+function ligaGuardarPartido(){
+  var eb=document.getElementById('ligaErrorPartido');
+  eb.style.display='none';
+  var fc=document.getElementById('ligaSelectContrincante').value;
+  if(!fc){showToast('Selecciona un contrincante.');return;}
+  var sets=[ligaLeerSet_('ligaSet1J','ligaSet1C'),ligaLeerSet_('ligaSet2J','ligaSet2C'),ligaLeerSet_('ligaSet3J','ligaSet3C')];
+  var err=ligaValidarPartidoCliente_(sets);
+  if(err){eb.textContent=err;eb.style.display='block';return;}
+  var btn=document.getElementById('ligaBtnGuardarPartido');
+  btn.disabled=true;btn.textContent='Guardando…';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false;btn.textContent='Guardar partido';
+      if(!res.ok){eb.textContent=res.error||'No se pudo guardar el partido.';eb.style.display='block';return;}
+      showToast('Partido guardado — ganó '+res.ganador+'.');
+      ligaLimpiarFormularioPartido();ligaCargarContrincantes();ligaToggleRegistrar();ligaCargarPanelDatos();
+    })
+    .withFailureHandler(function(e){btn.disabled=false;btn.textContent='Guardar partido';eb.textContent=errMsg_(e,'No se pudo guardar el partido.');eb.style.display='block';})
+    .registrarPartidoLigaPTC(ligaJugadorActual.fila,ligaJugadorActual.categoria,fc,sets);
+}
+
+/* ===== LIGA PTC · Administrador ===== */
+function ligaAdminReset_(){
+  document.getElementById('ligaAdminLoginBox').style.display='block';
+  document.getElementById('ligaAdminResultados').style.display='none';
+  document.getElementById('ligaAdminClave').value='';
+  document.getElementById('ligaAdminError').style.display='none';
+  document.getElementById('ligaAdminTablas').innerHTML='';
+}
+function ligaAdminAbrir(){ligaAdminReset_();goTo('ligaAdmin');}
+function ligaAdminVolver(){ligaAdminReset_();goTo('ligaLogin');}
+function ligaAdminEntrar(){
+  var clave=document.getElementById('ligaAdminClave').value;
+  var eb=document.getElementById('ligaAdminError');
+  eb.style.display='none';
+  if(!clave){showToast('Ingresa la clave.');return;}
+  var btn=document.getElementById('ligaAdminBtn');
+  btn.disabled=true;btn.textContent='Validando…';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false;btn.textContent='Entrar';
+      if(!res.ok){eb.textContent=res.error||'Clave incorrecta.';eb.style.display='block';return;}
+      document.getElementById('ligaAdminClave').value='';
+      document.getElementById('ligaAdminLoginBox').style.display='none';
+      document.getElementById('ligaAdminResultados').style.display='block';
+      ligaAdminCargar();
+    })
+    .withFailureHandler(function(e){btn.disabled=false;btn.textContent='Entrar';eb.textContent=errMsg_(e,'No se pudo validar la clave.');eb.style.display='block';})
+    .validarAdminLigaPTC(clave);
+}
+function ligaAdminCargar(){
+  var cont=document.getElementById('ligaAdminTablas');
+  cont.innerHTML='<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+  google.script.run
+    .withSuccessHandler(function(grupos){
+      if(!grupos||grupos.length===0){cont.innerHTML='<div class="centro">Sin datos todavía.</div>';return;}
+      cont.innerHTML=grupos.map(function(g){
+        return '<div class="liga-seccion-titulo">Categoría '+esc_(g.categoria)+'</div>'+
+          ((g.filas&&g.filas.length)?ligaTablaClasif_(g.filas,''):'<div class="centro" style="padding:10px 0;">Sin jugadores.</div>');
+      }).join('');
+    })
+    .withFailureHandler(function(e){cont.innerHTML='';showToast(errMsg_(e,'No se pudo cargar la clasificación.'));})
+    .clasificacionGeneralLigaPTC();
+}
+</script>
+</body>
+</html>
