@@ -106,6 +106,13 @@ body{overflow-x:hidden}
 .liga-partido-item .liga-score{color:#666;font-size:13px}
 .liga-seccion-titulo{font-weight:700;margin:18px 0 6px;font-size:15px}
 .liga-error{color:#e74c3c;font-size:13px;margin-top:6px;display:none}
+.vac-plan{background:#fff;color:#222;border-radius:8px;padding:12px;margin-bottom:8px;font-size:14px;cursor:pointer;border:2px solid transparent}
+.vac-plan.on{border-color:#98A82A;background:#EEF5C8;font-weight:600}
+.vac-reglas{background:#fff;color:#222;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:14px}
+.vac-reglas ol{margin:6px 0 0;padding-left:20px}.vac-reglas li{margin-bottom:4px}
+.vac-check{display:flex;gap:10px;align-items:flex-start;color:#fff;font-size:14px;margin:14px 0}
+.vac-check input{width:22px;height:22px;margin:0;flex-shrink:0}
+.vac-nav{display:flex;gap:8px;margin-top:14px}
 </style>
 </head>
 <body>
@@ -118,6 +125,7 @@ body{overflow-x:hidden}
     <div class="rol-card verde" onclick="goTo('profesor')"><div class="rol-icono">🎾</div><div><div class="rol-titulo">Profesor</div><div class="rol-sub">Registrar clases y asistencia</div></div></div>
     <div class="rol-card azul" onclick="goTo('adminLogin')" style="margin-top:14px;"><div class="rol-icono">📋</div><div><div class="rol-titulo">Administrador</div><div class="rol-sub">Reportes de la academia</div></div></div>
     <div class="rol-card verde" onclick="goTo('ligaLogin')" style="margin-top:14px;"><div class="rol-icono">🏆</div><div><div class="rol-titulo">LIGA PTC</div><div class="rol-sub">Registrar partidos y ver tu clasificación</div></div></div>
+    <div class="rol-card azul" onclick="vacIniciar()" style="margin-top:14px;"><div class="rol-icono">☀️</div><div><div class="rol-titulo">Vacacional PTC</div><div class="rol-sub">Inscripción a vacaciones recreativas</div></div></div>
   </div>
 </div>
 
@@ -199,6 +207,103 @@ body{overflow-x:hidden}
     <div class="reporte-btn" onclick="cargarReporte('profesor')">4. Clases personalizadas por profesor (total academia)</div>
     <div class="reporte-btn" onclick="cargarReporte('conciliacion')">5. Clases pagadas vs. clases tomadas</div>
     <div id="reporteResultado" style="margin-top:16px;"></div>
+  </div>
+</div>
+
+<div class="screen" data-screen="vac1">
+  <div class="app-bar"><div class="back" onclick="goTo('rol')">‹</div><h1>Vacacional PTC</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-verde" style="margin-bottom:14px;"><strong>Datos del niño(a)</strong></div>
+    <div class="caja-negra"><div id="vacNino1"></div><button onclick="vacSiguiente1()">Siguiente</button></div>
+    <div class="rol-card azul" onclick="vacAdminAbrir()" style="margin-top:22px;"><div class="rol-icono">🔒</div><div><div class="rol-titulo">Administrador</div><div class="rol-sub">Ver inscritos</div></div></div>
+  </div>
+</div>
+
+<div class="screen" data-screen="vac2">
+  <div class="app-bar"><div class="back" onclick="vacAtras('vac2')">‹</div><h1>Datos del acudiente</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-negra">
+      <label>Nombre completo del acudiente *</label><input type="text" id="vacAcNombre" maxlength="120">
+      <label>Número de documento *</label><input type="text" inputmode="numeric" id="vacAcDoc" maxlength="20">
+      <label>Teléfono de contacto *</label><input type="text" inputmode="tel" id="vacAcTel" maxlength="15">
+      <label>¿Ya perteneces a nuestra Academia o has participado en nuestros Vacacionales? *</label>
+      <div class="tipo-clase-opciones" style="margin:0 0 16px;"><div class="tipo-chip" data-g="pertenece" data-v="Sí" onclick="vacChip(this)">Sí</div><div class="tipo-chip" data-g="pertenece" data-v="No" onclick="vacChip(this)">No</div></div>
+      <button onclick="vacSiguiente2()">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" data-screen="vac3">
+  <div class="app-bar"><div class="back" onclick="vacAtras('vac3')">‹</div><h1 id="vacPlanTitulo">Plan</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-verde" style="margin-bottom:14px;"><strong>Selecciona tu plan</strong></div>
+    <div id="vacPlanes"></div>
+    <button onclick="vacSiguiente3()" style="margin-top:10px;">Siguiente</button>
+  </div>
+</div>
+
+<div class="screen" data-screen="vac5">
+  <div class="app-bar"><div class="back" onclick="vacAtras('vac5')">‹</div><h1>Hermano o amigo</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-verde" style="margin-bottom:14px;"><strong>Datos del segundo niño(a)</strong></div>
+    <div class="caja-negra"><div id="vacNino2"></div><button onclick="vacSiguiente5()">Siguiente</button></div>
+  </div>
+</div>
+
+<div class="screen" data-screen="vac6">
+  <div class="app-bar"><div class="back" onclick="vacAtras('vac6')">‹</div><h1>Autorización y reglas</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-negra" style="margin-bottom:14px;">
+      <label>Autorización para uso de fotografías o videos del niño(a) *</label>
+      <div class="tipo-clase-opciones" style="margin:0;">
+        <div class="tipo-chip" style="flex:1 1 100%;" data-g="fotos" data-v="Sí autorizo" onclick="vacChip(this)">Sí, autorizo el uso de imágenes con fines informativos y promocionales.</div>
+        <div class="tipo-chip" style="flex:1 1 100%;" data-g="fotos" data-v="No autorizo" onclick="vacChip(this)">No autorizo el uso de imágenes.</div>
+      </div>
+    </div>
+    <div class="vac-reglas"><strong>REGLAS Y CONDICIONES GENERALES</strong>
+      <p style="margin:6px 0 0;">Por favor lee atentamente las siguientes reglas antes de enviar tu inscripción:</p>
+      <ol>
+        <li>Los niños deben asistir con ropa deportiva, gorra, bloqueador solar y su hidratación.</li>
+        <li>En caso de natación, deben traer gorro, toalla y sandalias.</li>
+        <li>El ingreso y salida de los niños al Club La Estancia se realizará únicamente mediante un código QR personal, que será expedido por Perfect Tenis una vez confirmada la inscripción.</li>
+        <li>El ingreso y salida del acudiente o acompañante al Club La Estancia se realizará mediante su documento de identidad (cédula) en portería.</li>
+        <li>No se permite el ingreso de mascotas al club.</li>
+        <li>Perfect Tenis no se hace responsable por objetos deportivos olvidados.</li>
+        <li>La participación implica respeto, buen comportamiento y cumplimiento de los horarios establecidos.</li>
+        <li>En caso de emergencia, se contactará inmediatamente al acudiente registrado.</li>
+        <li>El acceso está permitido únicamente a las zonas autorizadas: área de tenis (kiosco y baños), zona de natación, camerinos y cambiadores.</li>
+        <li>El club cuenta con parqueadero: carro $7.000 / moto $3.500.</li>
+        <li>El club NO recibe efectivo, para consumos o pago de parqueadero.</li>
+      </ol>
+    </div>
+    <div class="caja-negra">
+      <label class="vac-check"><input type="checkbox" id="vacAcepto"><span>Confirmo haber leído y aceptado las reglas y condiciones del curso vacacional *</span></label>
+      <button id="vacBtnEnviar" onclick="vacEnviar()">Enviar inscripción</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" data-screen="vacGracias">
+  <div class="app-bar"><div class="back" onclick="goTo('rol')">‹</div><h1>Vacacional PTC</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div class="caja-verde" style="text-align:center;padding:30px 16px;"><div style="font-size:34px;">🎾</div><h1 style="margin-top:8px;">¡Gracias por elegirnos!</h1><p class="sub" style="color:#33361A;margin:8px 0 0;">Tu inscripción quedó registrada. Perfect Tenis la confirmará y te enviará el código QR de ingreso.</p></div>
+    <button onclick="goTo('rol')" style="margin-top:14px;">Volver al inicio</button>
+  </div>
+</div>
+
+<div class="screen" data-screen="vacAdmin">
+  <div class="app-bar"><div class="back" onclick="goTo('vac1')">‹</div><h1>Vacacional · Administrador</h1></div>
+  <div class="wrap" style="padding-top:0;">
+    <div id="vacAdminLogin" class="caja-negra">
+      <label>Clave de administrador</label><input type="password" id="vacAdminClave" placeholder="Ingresa la clave">
+      <div class="liga-error" id="vacAdminError"></div>
+      <button id="vacAdminBtn" onclick="vacAdminEntrar()" style="margin-top:10px;">Entrar</button>
+    </div>
+    <div id="vacAdminRes" style="display:none;">
+      <button class="secundario" onclick="vacAdminCargar()" style="margin-bottom:10px;">Actualizar</button>
+      <div id="vacAdminTotal" class="aviso"></div>
+      <div id="vacAdminTabla"></div>
+    </div>
   </div>
 </div>
 
@@ -770,6 +875,182 @@ function ligaAdminCargar(){
     })
     .withFailureHandler(function(e){cont.innerHTML='';showToast(errMsg_(e,'No se pudo cargar la clasificación.'));})
     .clasificacionGeneralLigaPTC();
+}
+
+/* ===== VACACIONAL PTC ===== */
+var vac={},vacSel={},vacAdminClaveMem='';
+var VAC_PLANES_FAMILIA=[
+  {t:'Plan 4 semanas · Individual',h:false},{t:'Plan 4 semanas · Con hermano o amigo',h:true},
+  {t:'Plan 3 semanas · Individual',h:false},{t:'Plan 3 semanas · Con hermano o amigo',h:true},
+  {t:'Plan 2 semanas · Individual',h:false},{t:'Plan 2 semanas · Con hermano o amigo',h:true},
+  {t:'Plan Semanal',h:false}];
+var VAC_PLANES_NUEVO=[
+  {t:'Plan Completo (4 semanas) · Individual',h:false},{t:'Plan Completo (4 semanas) · Con hermano o amigo',h:true},
+  {t:'Plan (3 semanas) · Individual',h:false},{t:'Plan (3 semanas) · Con hermano o amigo',h:true},
+  {t:'Plan (2 semanas) · Individual',h:false},{t:'Plan (2 semanas) · Con hermano o amigo',h:true},
+  {t:'Plan Semanal',h:false}];
+
+function vacChips(g,vals){
+  return '<div class="tipo-clase-opciones" style="margin:0 0 16px;">'+vals.map(function(v){
+    return '<div class="tipo-chip" data-g="'+g+'" data-v="'+v+'" onclick="vacChip(this)">'+v+'</div>';}).join('')+'</div>';
+}
+function vacChip(el){
+  var g=el.dataset.g;vacSel[g]=el.dataset.v;
+  document.querySelectorAll('.tipo-chip[data-g="'+g+'"]').forEach(function(c){c.classList.toggle('on',c===el);});
+  var box=document.getElementById(g+'Box');
+  if(box)box.style.display=el.dataset.v==='Sí'?'block':'none';
+}
+function vacRenderNino(p){
+  return '<label>Nombre completo del niño(a) *</label><input type="text" id="'+p+'_nombre" maxlength="120">'+
+  '<label>Fecha de nacimiento *</label><input type="date" id="'+p+'_fecha">'+
+  '<label>Sexo *</label>'+vacChips(p+'_sexo',['M','F'])+
+  '<label>Tipo de documento * (registro civil o tarjeta de identidad)</label>'+vacChips(p+'_tipoDoc',['R.C.','T.I.'])+
+  '<label>Número de documento *</label><input type="text" inputmode="numeric" id="'+p+'_numDoc" maxlength="20">'+
+  '<label>RH *</label><input type="text" id="'+p+'_rh" maxlength="10" placeholder="Ej: O+">'+
+  '<label>¿Cuenta con restricción médica o alergia? *</label>'+vacChips(p+'_alergia',['Sí','No'])+
+  '<div id="'+p+'_alergiaBox" style="display:none;"><label>Descríbela</label><textarea id="'+p+'_alergiaDesc" rows="2" maxlength="300"></textarea></div>'+
+  '<label>EPS *</label><input type="text" id="'+p+'_eps" maxlength="60">'+
+  '<label>¿El niño(a) llegará al vacacional en ruta o en transporte particular? *</label>'+vacChips(p+'_transporte',['Ruta','Particular']);
+}
+function vacInit(){
+  document.getElementById('vacNino1').innerHTML=vacRenderNino('vn1');
+  document.getElementById('vacNino2').innerHTML=vacRenderNino('vn2');
+  var hoy=hoy_();
+  ['vn1_fecha','vn2_fecha'].forEach(function(id){document.getElementById(id).max=hoy;});
+}
+vacInit();
+
+function vacLeerNino(p){
+  var v=function(id){return document.getElementById(p+'_'+id).value.trim();};
+  var al=vacSel[p+'_alergia']||'';
+  var d={nombre:v('nombre'),fechaNac:v('fecha'),sexo:vacSel[p+'_sexo']||'',tipoDoc:vacSel[p+'_tipoDoc']||'',
+    numDoc:v('numDoc'),rh:v('rh'),alergia:al==='Sí'?'Sí: '+v('alergiaDesc'):al,eps:v('eps'),transporte:vacSel[p+'_transporte']||''};
+  var e='';
+  if(!d.nombre)e='Escribe el nombre completo del niño(a).';
+  else if(!d.fechaNac)e='Selecciona la fecha de nacimiento.';
+  else if(!d.sexo)e='Selecciona el sexo.';
+  else if(!d.tipoDoc)e='Selecciona el tipo de documento.';
+  else if(!/^\d{4,20}$/.test(d.numDoc))e='El número de documento debe tener solo números.';
+  else if(!d.rh)e='Escribe el RH.';
+  else if(!al)e='Indica si tiene restricción médica o alergia.';
+  else if(al==='Sí'&&!v('alergiaDesc'))e='Describe la restricción médica o alergia.';
+  else if(!d.eps)e='Escribe la EPS.';
+  else if(!d.transporte)e='Indica si llega en ruta o en transporte particular.';
+  return{d:d,e:e};
+}
+function vacReset(){
+  vac={};vacSel={};
+  document.querySelectorAll('[data-screen^="vac"] .tipo-chip').forEach(function(c){c.classList.remove('on');});
+  document.querySelectorAll('[data-screen^="vac"] input[type=text],[data-screen^="vac"] input[type=date],[data-screen^="vac"] textarea').forEach(function(i){i.value='';});
+  document.querySelectorAll('[id$="_alergiaBox"]').forEach(function(b){b.style.display='none';});
+  document.getElementById('vacAcepto').checked=false;
+  document.getElementById('vacPlanes').innerHTML='';
+}
+function vacIniciar(){vacReset();goTo('vac1');}
+function vacAtras(desde){
+  if(desde==='vac2')goTo('vac1');
+  else if(desde==='vac3')goTo('vac2');
+  else if(desde==='vac5')goTo('vac3');
+  else if(desde==='vac6')goTo(vac.necesita2?'vac5':'vac3');
+}
+function vacSiguiente1(){
+  var r=vacLeerNino('vn1');
+  if(r.e){showToast(r.e);return;}
+  vac.nino1=r.d;goTo('vac2');
+}
+function vacSiguiente2(){
+  var n=document.getElementById('vacAcNombre').value.trim();
+  var d=document.getElementById('vacAcDoc').value.trim();
+  var t=document.getElementById('vacAcTel').value.trim();
+  if(!n){showToast('Escribe el nombre del acudiente.');return;}
+  if(!/^\d{4,20}$/.test(d)){showToast('El documento del acudiente debe tener solo números.');return;}
+  if(!/^\d{7,15}$/.test(t)){showToast('Escribe un teléfono válido (solo números).');return;}
+  if(!vacSel.pertenece){showToast('Indica si ya perteneces a la Academia.');return;}
+  var cambio=vac.pertenece&&vac.pertenece!==vacSel.pertenece;
+  vac.acudiente={nombre:n,documento:d,telefono:t};
+  vac.pertenece=vacSel.pertenece;
+  if(cambio||!vac.plan)vacRenderPlanes();
+  goTo('vac3');
+}
+function vacLista_(){return vac.pertenece==='Sí'?VAC_PLANES_FAMILIA:VAC_PLANES_NUEVO;}
+function vacRenderPlanes(){
+  vac.plan='';vac.necesita2=false;
+  document.getElementById('vacPlanTitulo').textContent=vac.pertenece==='Sí'?'Plan especial Familia PTC':'Plan elegido';
+  document.getElementById('vacPlanes').innerHTML=vacLista_().map(function(p,i){
+    return '<div class="vac-plan" data-i="'+i+'" onclick="vacElegirPlan('+i+')">'+esc_(p.t)+'</div>';}).join('');
+}
+function vacElegirPlan(i){
+  var p=vacLista_()[i];vac.plan=p.t;vac.necesita2=p.h;
+  document.querySelectorAll('.vac-plan').forEach(function(e){e.classList.toggle('on',Number(e.dataset.i)===i);});
+}
+function vacSiguiente3(){
+  if(!vac.plan){showToast('Selecciona un plan.');return;}
+  goTo(vac.necesita2?'vac5':'vac6');
+}
+function vacSiguiente5(){
+  var r=vacLeerNino('vn2');
+  if(r.e){showToast(r.e);return;}
+  vac.nino2=r.d;goTo('vac6');
+}
+function vacEnviar(){
+  if(!vacSel.fotos){showToast('Indica si autorizas el uso de imágenes.');return;}
+  if(!document.getElementById('vacAcepto').checked){showToast('Debes aceptar las reglas y condiciones.');return;}
+  var ninos=[vac.nino1];if(vac.necesita2)ninos.push(vac.nino2);
+  var datos={acudiente:vac.acudiente,perteneceAcademia:vac.pertenece,plan:vac.plan,ninos:ninos,fotos:vacSel.fotos,acepto:true};
+  var btn=document.getElementById('vacBtnEnviar');
+  btn.disabled=true;btn.textContent='Enviando…';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false;btn.textContent='Enviar inscripción';
+      if(!res.ok){showToast(res.error||'No se pudo enviar la inscripción.');return;}
+      vacReset();goTo('vacGracias');
+    })
+    .withFailureHandler(function(e){btn.disabled=false;btn.textContent='Enviar inscripción';showToast(errMsg_(e,'No se pudo enviar la inscripción.'));})
+    .registrarInscripcionVacacional(datos);
+}
+
+function vacAdminAbrir(){
+  vacAdminClaveMem='';
+  document.getElementById('vacAdminLogin').style.display='block';
+  document.getElementById('vacAdminRes').style.display='none';
+  document.getElementById('vacAdminClave').value='';
+  document.getElementById('vacAdminError').style.display='none';
+  goTo('vacAdmin');
+}
+function vacAdminEntrar(){
+  var clave=document.getElementById('vacAdminClave').value;
+  var eb=document.getElementById('vacAdminError');
+  eb.style.display='none';
+  if(!clave){showToast('Ingresa la clave.');return;}
+  var btn=document.getElementById('vacAdminBtn');
+  btn.disabled=true;btn.textContent='Validando…';
+  google.script.run
+    .withSuccessHandler(function(res){
+      btn.disabled=false;btn.textContent='Entrar';
+      if(!res.ok){eb.textContent=res.error||'Clave incorrecta.';eb.style.display='block';return;}
+      vacAdminClaveMem=clave;
+      document.getElementById('vacAdminClave').value='';
+      document.getElementById('vacAdminLogin').style.display='none';
+      document.getElementById('vacAdminRes').style.display='block';
+      vacAdminCargar();
+    })
+    .withFailureHandler(function(e){btn.disabled=false;btn.textContent='Entrar';eb.textContent=errMsg_(e,'No se pudo validar la clave.');eb.style.display='block';})
+    .validarAdminVacacional(clave);
+}
+function vacAdminCargar(){
+  var cont=document.getElementById('vacAdminTabla');
+  cont.innerHTML='<div class="skeleton"></div><div class="skeleton"></div>';
+  google.script.run
+    .withSuccessHandler(function(filas){
+      document.getElementById('vacAdminTotal').textContent='Total de niños inscritos: '+(filas?filas.length:0);
+      if(!filas||filas.length===0){cont.innerHTML='<div class="centro">Todavía no hay inscripciones.</div>';return;}
+      var cols=[['Nino','Niño(a)'],['Plan','Plan'],['Acudiente','Acudiente'],['Telefono','Teléfono'],['Transporte','Transporte'],['Alergia','Alergia'],['FechaHora','Fecha']];
+      var thead='<tr>'+cols.map(function(c){return '<th>'+c[1]+'</th>';}).join('')+'</tr>';
+      var tbody=filas.map(function(f){return '<tr>'+cols.map(function(c){return '<td>'+esc_(f[c[0]])+'</td>';}).join('')+'</tr>';}).join('');
+      cont.innerHTML='<div class="tabla-wrap"><table>'+thead+tbody+'</table></div>';
+    })
+    .withFailureHandler(function(e){cont.innerHTML='';showToast(errMsg_(e,'No se pudo cargar la lista.'));})
+    .listarInscritosVacacional(vacAdminClaveMem);
 }
 </script>
 </body>
