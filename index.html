@@ -113,6 +113,7 @@ body{overflow-x:hidden}
 .vac-check{display:flex;gap:10px;align-items:flex-start;color:#fff;font-size:14px;margin:14px 0}
 .vac-check input{width:22px;height:22px;margin:0;flex-shrink:0}
 .vac-nav{display:flex;gap:8px;margin-top:14px}
+input[readonly]{background:#e8e8e8;color:#555}
 </style>
 </head>
 <body>
@@ -246,7 +247,20 @@ body{overflow-x:hidden}
   <div class="app-bar"><div class="back" onclick="vacAtras('vac5')">‹</div><h1>Hermano o amigo</h1></div>
   <div class="wrap" style="padding-top:0;">
     <div class="caja-verde" style="margin-bottom:14px;"><strong>Datos del segundo niño(a)</strong></div>
-    <div class="caja-negra"><div id="vacNino2"></div><button onclick="vacSiguiente5()">Siguiente</button></div>
+    <div class="caja-negra">
+      <div id="vacInfoPareja" class="aviso" style="background:rgba(255,255,255,.12);color:#fff;"></div>
+      <label>¿Viene con un hermano o con un amigo? *</label>
+      <div class="tipo-clase-opciones" style="margin:0 0 16px;"><div class="tipo-chip" data-g="relacion" data-v="Hermano" onclick="vacChip(this)">Hermano(a)</div><div class="tipo-chip" data-g="relacion" data-v="Amigo" onclick="vacChip(this)">Amigo(a)</div></div>
+      <div id="vacAc2Box" style="display:none;">
+        <div id="vacAc2Msg" class="sub" style="margin:0 0 10px;"></div>
+        <label>Nombre completo del acudiente *</label><input type="text" id="vacAc2Nombre" maxlength="120">
+        <label>Cédula del acudiente *</label><input type="text" inputmode="numeric" id="vacAc2Doc" maxlength="20">
+        <label>Número de teléfono *</label><input type="text" inputmode="tel" id="vacAc2Tel" maxlength="15">
+        <hr style="border:0;border-top:1px solid #333;margin:6px 0 14px;">
+        <div id="vacNino2"></div>
+        <button onclick="vacSiguiente5()">Siguiente</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -899,6 +913,7 @@ function vacChip(el){
   document.querySelectorAll('.tipo-chip[data-g="'+g+'"]').forEach(function(c){c.classList.toggle('on',c===el);});
   var box=document.getElementById(g+'Box');
   if(box)box.style.display=el.dataset.v==='Sí'?'block':'none';
+  if(g==='relacion')vacRelacion(el.dataset.v);
 }
 function vacRenderNino(p){
   return '<label>Nombre completo del niño(a) *</label><input type="text" id="'+p+'_nombre" maxlength="120">'+
@@ -945,6 +960,22 @@ function vacReset(){
   document.querySelectorAll('[id$="_alergiaBox"]').forEach(function(b){b.style.display='none';});
   document.getElementById('vacAcepto').checked=false;
   document.getElementById('vacPlanes').innerHTML='';
+  document.getElementById('vacAc2Box').style.display='none';
+  ['vacAc2Nombre','vacAc2Doc','vacAc2Tel'].forEach(function(id){document.getElementById(id).readOnly=false;});
+}
+function vacRelacion(v){
+  var n=document.getElementById('vacAc2Nombre'),d=document.getElementById('vacAc2Doc'),t=document.getElementById('vacAc2Tel');
+  var a=vac.acudiente||{};
+  document.getElementById('vacAc2Box').style.display='block';
+  if(v==='Hermano'){
+    n.value=a.nombre||'';d.value=a.documento||'';t.value=a.telefono||'';
+    n.readOnly=d.readOnly=t.readOnly=true;
+    document.getElementById('vacAc2Msg').textContent='Como son hermanos, los datos del acudiente se llenaron automáticamente.';
+  }else{
+    n.value=d.value=t.value='';
+    n.readOnly=d.readOnly=t.readOnly=false;
+    document.getElementById('vacAc2Msg').textContent='Escribe los datos del acudiente de tu amigo(a).';
+  }
 }
 function vacIniciar(){vacReset();goTo('vac1');}
 function vacAtras(desde){
@@ -985,18 +1016,31 @@ function vacElegirPlan(i){
 }
 function vacSiguiente3(){
   if(!vac.plan){showToast('Selecciona un plan.');return;}
-  goTo(vac.necesita2?'vac5':'vac6');
+  if(vac.necesita2){
+    document.getElementById('vacInfoPareja').textContent='Se inscribe junto con: '+vac.nino1.nombre;
+    if(vacSel.relacion==='Hermano')vacRelacion('Hermano');
+    goTo('vac5');
+  }else goTo('vac6');
 }
 function vacSiguiente5(){
+  if(!vacSel.relacion){showToast('Indica si viene con un hermano o con un amigo.');return;}
+  var n=document.getElementById('vacAc2Nombre').value.trim();
+  var d=document.getElementById('vacAc2Doc').value.trim();
+  var t=document.getElementById('vacAc2Tel').value.trim();
+  if(!n){showToast('Escribe el nombre del acudiente.');return;}
+  if(!/^\d{4,20}$/.test(d)){showToast('La cédula del acudiente debe tener solo números.');return;}
+  if(!/^\d{7,15}$/.test(t)){showToast('Escribe un teléfono válido (solo números).');return;}
   var r=vacLeerNino('vn2');
   if(r.e){showToast(r.e);return;}
+  vac.relacion=vacSel.relacion;
+  vac.acudiente2={nombre:n,documento:d,telefono:t};
   vac.nino2=r.d;goTo('vac6');
 }
 function vacEnviar(){
   if(!vacSel.fotos){showToast('Indica si autorizas el uso de imágenes.');return;}
   if(!document.getElementById('vacAcepto').checked){showToast('Debes aceptar las reglas y condiciones.');return;}
   var ninos=[vac.nino1];if(vac.necesita2)ninos.push(vac.nino2);
-  var datos={acudiente:vac.acudiente,perteneceAcademia:vac.pertenece,plan:vac.plan,ninos:ninos,fotos:vacSel.fotos,acepto:true};
+  var datos={acudiente:vac.acudiente,perteneceAcademia:vac.pertenece,plan:vac.plan,ninos:ninos,fotos:vacSel.fotos,acepto:true,relacion:vac.necesita2?vac.relacion:'',acudiente2:vac.necesita2?vac.acudiente2:null};
   var btn=document.getElementById('vacBtnEnviar');
   btn.disabled=true;btn.textContent='Enviando…';
   google.script.run
@@ -1044,7 +1088,7 @@ function vacAdminCargar(){
     .withSuccessHandler(function(filas){
       document.getElementById('vacAdminTotal').textContent='Total de niños inscritos: '+(filas?filas.length:0);
       if(!filas||filas.length===0){cont.innerHTML='<div class="centro">Todavía no hay inscripciones.</div>';return;}
-      var cols=[['Nino','Niño(a)'],['Plan','Plan'],['Acudiente','Acudiente'],['Telefono','Teléfono'],['Transporte','Transporte'],['Alergia','Alergia'],['FechaHora','Fecha']];
+      var cols=[['Nino','Niño(a)'],['VienenCon','Viene con'],['Relacion','Relación'],['GrupoID','Grupo'],['Plan','Plan'],['Acudiente','Acudiente'],['Telefono','Teléfono'],['Transporte','Transporte'],['Alergia','Alergia'],['FechaHora','Fecha']];
       var thead='<tr>'+cols.map(function(c){return '<th>'+c[1]+'</th>';}).join('')+'</tr>';
       var tbody=filas.map(function(f){return '<tr>'+cols.map(function(c){return '<td>'+esc_(f[c[0]])+'</td>';}).join('')+'</tr>';}).join('');
       cont.innerHTML='<div class="tabla-wrap"><table>'+thead+tbody+'</table></div>';
