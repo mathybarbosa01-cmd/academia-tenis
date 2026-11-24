@@ -1097,5 +1097,145 @@ function vacAdminCargar(){
     .listarInscritosVacacional(vacAdminClaveMem);
 }
 </script>
+<!-- ASISTENCIAS VACACIONAL — pega este bloque dentro de la sección de Administrador del Vacacional -->
+<div id="asisVacRaiz">
+  <button id="asisVacBtn" type="button">📋 Asistencias</button>
+  <div id="asisVacPanel" hidden style="margin-top:12px"></div>
+</div>
+<style>
+#asisVacRaiz [hidden]{display:none!important}
+#asisVacBtn{width:100%;padding:14px;border:0;border-radius:10px;background:#0f5a2d;color:#fff;font:700 16px system-ui,Arial;cursor:pointer}
+#asisVacPanel input[type=password]{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font-size:15px;margin:8px 0}
+#asisVacPanel .lg button{width:100%;padding:12px;border:0;border-radius:8px;background:#0f5a2d;color:#fff;font:700 15px system-ui;cursor:pointer}
+#asisVac{font-family:system-ui,Arial,sans-serif;color:#222;padding-bottom:80px}
+#asisVac *{box-sizing:border-box}
+#asisVac .av-tabs{display:flex;gap:6px;margin-bottom:12px}
+#asisVac .av-tabs button{flex:1;padding:11px;border:1px solid #ccc;background:#fff;border-radius:10px;font:600 14px system-ui;cursor:pointer}
+#asisVac .av-tabs button.on{background:#0f5a2d;color:#fff;border-color:#0f5a2d}
+#asisVac .av-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+#asisVac input[type=date],#asisVac input[type=search]{padding:10px;border:1px solid #ccc;border-radius:8px;font-size:15px}
+#asisVac input[type=search]{flex:1;min-width:130px}
+#asisVac .sm{padding:9px 12px;border:1px solid #ccc;background:#fff;border-radius:8px;font:600 13px system-ui;cursor:pointer}
+#asisVac .av-cnt{font-weight:700;margin:4px 0 8px}
+#asisVac .av-list{background:#fff;border:1px solid #ddd;border-radius:12px;overflow:hidden}
+#asisVac .av-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #eee;cursor:pointer}
+#asisVac .av-row.on{background:#eef5c8}
+#asisVac .av-row input{width:24px;height:24px;accent-color:#0f5a2d;flex:none}
+#asisVac .av-foot{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ddd;padding:10px;display:flex;gap:10px;align-items:center;justify-content:center;z-index:20}
+#asisVac .av-save{background:#0f5a2d;color:#fff;border:0;border-radius:10px;padding:13px 28px;font:700 16px system-ui;cursor:pointer;min-width:190px}
+#asisVac .av-save:disabled{opacity:.5}
+#asisVac .av-msg{font-size:13px;color:#666}#asisVac .av-msg.ok{color:#0f7a3a;font-weight:700}
+#asisVac table{width:100%;border-collapse:collapse;font-size:14px}
+#asisVac th,#asisVac td{padding:10px;text-align:left;border-bottom:1px solid #eee}
+#asisVac .r{text-align:right}
+#asisVac .chip{display:inline-block;background:#f1f5ef;border:1px solid #ddd;border-radius:20px;padding:2px 10px;font-size:12px;margin:2px}
+</style>
+<script>
+var AsistenciasVac=(function(){
+  var cfg,root,kids=[],cur={},dirty=false,tot=null,abierto={};
+  function $(s){return root.querySelector(s)}
+  function clave(){return typeof cfg.clave==='function'?cfg.clave():cfg.clave}
+  function llamar(fn,args){
+    if(cfg.llamar)return Promise.resolve(cfg.llamar(fn,args));
+    return fetch(cfg.apiUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:fn,args:args})})
+      .then(function(r){return r.json()}).then(function(j){if(!j.ok)throw new Error(j.error);return j.data});
+  }
+  function hoy(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function fmt(f){var p=f.split('-');return p[2]+'/'+p[1]+'/'+p[0]}
+  function norm(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
+  function msg(t,ok){var m=$('.av-msg');m.textContent=t;m.className='av-msg'+(ok?' ok':'')}
+  function count(){return Object.keys(cur).length}
+  function pintar(){
+    var q=norm($('.av-q').value),h='';
+    kids.forEach(function(k){
+      if(q&&norm(k.nombre).indexOf(q)<0)return;
+      var on=!!cur[k.documento];
+      h+='<label class="av-row'+(on?' on':'')+'"><input type="checkbox" data-d="'+k.documento+'"'+(on?' checked':'')+'><span>'+k.nombre+'</span></label>';
+    });
+    $('.av-list').innerHTML=h||'<div style="padding:20px;text-align:center;color:#777">Sin resultados</div>';
+    $('.av-cnt').textContent=count()+' de '+kids.length+' presentes · '+fmt($('.av-fecha').value);
+  }
+  function cargarDia(){
+    msg('Cargando…');
+    llamar('obtenerAsistenciaVacacional',[clave(),$('.av-fecha').value]).then(function(r){
+      cur={};r.presentes.forEach(function(d){cur[d]=true});dirty=false;
+      msg(r.existe?'Guardado ('+r.presentes.length+' presentes)':'Sin registro para este día');pintar();
+    }).catch(function(e){msg(e.message)});
+  }
+  function guardar(){
+    var b=$('.av-save');b.disabled=true;b.textContent='Guardando…';
+    llamar('guardarAsistenciaVacacional',[clave(),$('.av-fecha').value,Object.keys(cur)]).then(function(r){
+      dirty=false;msg('✓ Guardado ('+r.presentes+' presentes)',true);
+    }).catch(function(e){msg(e.message)}).then(function(){b.disabled=false;b.textContent='Guardar'});
+  }
+  function pintarTotales(){
+    if(!tot)return;var q=norm($('.av-q2').value),h='';
+    $('.av-res').textContent=tot.dias.length+' día(s) registrado(s)';
+    tot.ninos.forEach(function(n){
+      if(q&&norm(n.nombre).indexOf(q)<0)return;
+      var p=tot.dias.length?Math.round(100*n.total/tot.dias.length):0;
+      h+='<tr data-d="'+n.documento+'" style="cursor:pointer"><td>'+n.nombre+'</td><td class="r"><b>'+n.total+'</b></td><td class="r">'+p+'%</td></tr>';
+      if(abierto[n.documento])h+='<tr><td colspan="3">'+(n.fechas.length?n.fechas.map(function(f){return '<span class="chip">'+fmt(f)+'</span>'}).join(''):'Sin asistencias')+'</td></tr>';
+    });
+    $('.av-tb').innerHTML=h;
+    $('.av-dias').innerHTML=tot.dias.slice().reverse().map(function(d){return '<div class="av-row" style="cursor:default"><span style="flex:1">'+fmt(d.fecha)+'</span><b>'+d.presentes+' / '+d.total+'</b></div>'}).join('')||'<div style="padding:16px;color:#777">Aún no hay asistencias guardadas</div>';
+  }
+  function cargarTotales(){
+    llamar('totalesAsistenciaVacacional',[clave()]).then(function(t){tot=t;pintarTotales()}).catch(function(e){$('.av-res').textContent=e.message});
+  }
+  function tab(n){
+    $('.v1').hidden=n!==1;$('.v2').hidden=n!==2;
+    $('.t1').className='t1'+(n===1?' on':'');$('.t2').className='t2'+(n===2?' on':'');
+    if(n===2)cargarTotales();
+  }
+  function init(o){
+    cfg=o;root=document.querySelector(o.contenedor||'#asisVac');
+    root.innerHTML=
+     '<div class="av-tabs"><button class="t1 on">Asistencias</button><button class="t2">Asistencias totales</button></div>'+
+     '<div class="v1"><div class="av-bar"><input type="date" class="av-fecha"><input type="search" class="av-q" placeholder="Buscar niño…"></div>'+
+     '<div class="av-bar"><button class="sm av-all">Marcar todos</button><button class="sm av-none">Desmarcar todos</button></div>'+
+     '<div class="av-cnt"></div><div class="av-list"></div>'+
+     '<div class="av-foot"><span class="av-msg"></span><button class="av-save">Guardar</button></div></div>'+
+     '<div class="v2" hidden><div class="av-bar"><input type="search" class="av-q2" placeholder="Buscar niño…"></div>'+
+     '<div class="av-cnt av-res"></div><div class="av-list"><table><thead><tr><th>Niño</th><th class="r">Asistencias</th><th class="r">%</th></tr></thead><tbody class="av-tb"></tbody></table></div>'+
+     '<h3 style="margin:16px 0 8px;font-size:15px">Registro por día</h3><div class="av-list av-dias"></div></div>';
+    $('.av-fecha').value=hoy();
+    $('.t1').onclick=function(){tab(1)};$('.t2').onclick=function(){tab(2)};
+    $('.av-list').addEventListener('change',function(e){var d=e.target.dataset.d;if(!d)return;if(e.target.checked)cur[d]=true;else delete cur[d];e.target.closest('.av-row').classList.toggle('on',e.target.checked);dirty=true;msg('Cambios sin guardar');$('.av-cnt').textContent=count()+' de '+kids.length+' presentes · '+fmt($('.av-fecha').value)});
+    $('.av-q').oninput=pintar;$('.av-q2').oninput=pintarTotales;
+    $('.av-all').onclick=function(){kids.forEach(function(k){cur[k.documento]=true});dirty=true;msg('Cambios sin guardar');pintar()};
+    $('.av-none').onclick=function(){cur={};dirty=true;msg('Cambios sin guardar');pintar()};
+    $('.av-fecha').onchange=function(){if(dirty&&!confirm('Hay cambios sin guardar. ¿Descartarlos?'))return;cargarDia()};
+    $('.av-save').onclick=guardar;
+    $('.av-tb').onclick=function(e){var tr=e.target.closest('tr[data-d]');if(!tr)return;abierto[tr.dataset.d]=!abierto[tr.dataset.d];pintarTotales()};
+    llamar('listarNinosAsistenciaVacacional',[clave()]).then(function(l){kids=l;cargarDia()}).catch(function(e){msg(e.message)});
+  }
+  return {init:init};
+})();
+
+// ═══ ÚNICO DATO QUE DEBES CAMBIAR: la URL de tu Web App (Apps Script → Implementar → Administrar implementaciones → URL) ═══
+var URL_WEB_APP = 'https://script.google.com/macros/s/AKfycbxOMqAyG7DET6piLtyu9hsSEd4pAsY068ueKsrkhXlkPZUCPUDN_uCOG2kBniy1zQU7/exec';
+
+(function(){
+  var btn=document.getElementById('asisVacBtn'),panel=document.getElementById('asisVacPanel'),clave='',listo=false;
+  function pedirClave(){
+    panel.innerHTML='<div class="lg"><label style="font-size:14px">Clave del administrador del Vacacional</label>'+
+      '<input type="password" id="asisVacClave" placeholder="Clave" autocomplete="off"><div id="asisVacErr" style="color:#b3261e;font-size:13px;min-height:18px"></div>'+
+      '<button type="button" id="asisVacEntrar">Entrar</button></div>';
+    var go=function(){
+      var v=document.getElementById('asisVacClave').value,err=document.getElementById('asisVacErr');err.textContent='Validando…';
+      fetch(URL_WEB_APP,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:'validarAdminVacacional',args:[v]})})
+        .then(function(r){return r.json()}).then(function(j){
+          if(!j.ok)throw new Error(j.error);
+          if(!j.data.ok)throw new Error(j.data.error||'Clave incorrecta.');
+          clave=v;listo=true;panel.innerHTML='<div id="asisVac"></div>';
+          AsistenciasVac.init({contenedor:'#asisVac',apiUrl:URL_WEB_APP,clave:function(){return clave}});
+        }).catch(function(e){err.textContent=e.message==='Failed to fetch'?'No se pudo conectar con la app. Revisa la URL.':e.message});
+    };
+    document.getElementById('asisVacEntrar').onclick=go;
+    document.getElementById('asisVacClave').onkeydown=function(e){if(e.key==='Enter')go()};
+  }
+  btn.onclick=function(){panel.hidden=!panel.hidden;if(!panel.hidden&&!listo)pedirClave()};
+})();
 </body>
 </html>
